@@ -310,6 +310,143 @@ class RetryableQaAdapterTest {
         }
     }
 
+    @Test
+    void repairsTornTailOnStartupSoSubsequentAppendsSurviveRestart(@TempDir Path tempDir) throws Exception {
+        Path outboxFile = tempDir.resolve("durable_outbox.jsonl");
+        Path corruptFile = tempDir.resolve("durable_outbox.jsonl.corrupt");
+        AtomicInteger qaStatus = new AtomicInteger(500);
+        Queue<String> receivedBodies = new ConcurrentLinkedQueue<>();
+
+        HttpServer mockQa = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        mockQa.createContext("/qa", ex -> {
+            byte[] body = ex.getRequestBody().readAllBytes();
+            if (qaStatus.get() == 200) {
+                receivedBodies.add(new String(body, StandardCharsets.UTF_8));
+            }
+            ex.sendResponseHeaders(qaStatus.get(), -1);
+            ex.close();
+        });
+        mockQa.start();
+
+        try {
+            String qaUrl = "http://127.0.0.1:" + mockQa.getAddress().getPort() + "/qa";
+            Instant now = Instant.parse("2026-11-24T04:00:00Z");
+            IncidentCard cardA = sampleCard(now.minusSeconds(20));
+            IncidentCard cardB = sampleCard(now.minusSeconds(5));
+
+            // Seed a valid outbox line via adapter, then simulate a torn tail without trailing newline.
+            try (RetryableQaAdapter seeder = RetryableQaAdapter.createConfigured(
+                    objectMapper,
+                    qaUrl,
+                    outboxFile,
+                    new PrometheusMetricsAdapter(),
+                    fixedClock(new AtomicReference<>(now)),
+                    Duration.ofMinutes(15),
+                    1,
+                    0L,
+                    Duration.ofSeconds(2))) {
+                seeder.sendCriticalIncident(cardA);
+                seeder.flushOutbox();
+            }
+            String validLineA = Files.readAllLines(outboxFile).getFirst();
+            Files.writeString(outboxFile, validLineA + "\n{\"card\":{\"reviewId\":\"", StandardCharsets.UTF_8);
+
+            // Restart #1: repairs torn tail into .corrupt, rewrites clean outbox, then accepts cardB while QA is 500.
+            try (RetryableQaAdapter first = RetryableQaAdapter.createConfigured(
+                    objectMapper,
+                    qaUrl,
+                    outboxFile,
+                    new PrometheusMetricsAdapter(),
+                    fixedClock(new AtomicReference<>(now)),
+                    Duration.ofMinutes(15),
+                    1,
+                    0L,
+                    Duration.ofSeconds(2))) {
+                assertThat(first.pendingCount()).isEqualTo(1);
+                assertThat(Files.readString(corruptFile)).contains("{\"card\":{\"reviewId\":\"");
+
+                first.sendCriticalIncident(cardB);
+                first.flushOutbox();
+                assertThat(first.pendingCount()).isEqualTo(2);
+                assertThat(Files.readAllLines(outboxFile)).hasSize(2);
+            }
+
+            // Restart #2 against healthy 200 QA: both cardA and cardB must survive and deliver.
+            qaStatus.set(200);
+            try (RetryableQaAdapter second = RetryableQaAdapter.createConfigured(
+                    objectMapper,
+                    qaUrl,
+                    outboxFile,
+                    new PrometheusMetricsAdapter(),
+                    fixedClock(new AtomicReference<>(now)),
+                    Duration.ofMinutes(15),
+                    2,
+                    0L,
+                    Duration.ofSeconds(2))) {
+                second.flushOutbox();
+                assertThat(second.pendingCount()).isZero();
+                assertThat(Files.readAllLines(outboxFile)).isEmpty();
+            }
+
+            assertThat(receivedBodies).hasSize(2);
+            String allDelivered = String.join("\n", receivedBodies);
+            assertThat(allDelivered)
+                    .contains(cardA.reviewId().toString())
+                    .contains(cardB.reviewId().toString());
+            assertThat(Files.readString(corruptFile)).contains("{\"card\":{\"reviewId\":\"");
+        } finally {
+            mockQa.stop(0);
+        }
+    }
+
+    @Test
+    void failsLoudlyWhenMiddleOfOutboxIsCorrupted(@TempDir Path tempDir) throws Exception {
+        Path outboxFile = tempDir.resolve("corrupt_middle_outbox.jsonl");
+        Instant now = Instant.parse("2026-11-24T04:00:00Z");
+        IncidentCard card = sampleCard(now);
+
+        HttpServer downQa = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        downQa.createContext("/qa", ex -> {
+            ex.sendResponseHeaders(500, -1);
+            ex.close();
+        });
+        downQa.start();
+
+        try {
+            String qaUrl = "http://127.0.0.1:" + downQa.getAddress().getPort() + "/qa";
+            try (RetryableQaAdapter seeder = RetryableQaAdapter.createConfigured(
+                    objectMapper,
+                    qaUrl,
+                    outboxFile,
+                    new PrometheusMetricsAdapter(),
+                    fixedClock(new AtomicReference<>(now)),
+                    Duration.ofMinutes(15),
+                    1,
+                    0L,
+                    Duration.ofSeconds(2))) {
+                seeder.sendCriticalIncident(card);
+                seeder.flushOutbox();
+            }
+            String validLine = Files.readAllLines(outboxFile).getFirst();
+            Files.writeString(outboxFile, "corrupted-middle-line\n" + validLine + "\n", StandardCharsets.UTF_8);
+
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> RetryableQaAdapter.createConfigured(
+                            objectMapper,
+                            qaUrl,
+                            outboxFile,
+                            new PrometheusMetricsAdapter(),
+                            fixedClock(new AtomicReference<>(now)),
+                            Duration.ofMinutes(15),
+                            1,
+                            0L,
+                            Duration.ofSeconds(2)))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Corrupted line");
+        } finally {
+            downQa.stop(0);
+        }
+    }
+
     private static ClockPort fixedClock(AtomicReference<Instant> ref) {
         return new ClockPort() {
             @Override

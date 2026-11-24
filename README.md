@@ -11,13 +11,13 @@
   <img src="https://img.shields.io/badge/Maven-3.10.0-C71A36?style=flat-square&logo=apachemaven&logoColor=white" alt="Maven 3.10.0">
   <img src="https://img.shields.io/badge/Jackson-2.23.0-2B5B84?style=flat-square&logo=json&logoColor=white" alt="Jackson 2.23.0">
   <img src="https://img.shields.io/badge/Docker-Multi--Stage-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Multi-Stage">
-  <img src="https://img.shields.io/badge/OpenAPI-3.1.0-6BA539?style=flat-square&logo=openapiinitiative&logoColor=white" alt="OpenAPI 3.1.0">
+  <img src="https://img.shields.io/badge/OpenAPI-3.0.3-6BA539?style=flat-square&logo=openapiinitiative&logoColor=white" alt="OpenAPI 3.0.3">
   <img src="https://img.shields.io/badge/Prometheus-Metrics-E6522C?style=flat-square&logo=prometheus&logoColor=white" alt="Prometheus Metrics">
   <img src="https://img.shields.io/badge/Architecture-Clean%20%2F%20Hexagonal-6E4AFF?style=flat-square" alt="Clean / Hexagonal Architecture">
 </p>
 <p>
-  <img src="https://img.shields.io/badge/JUnit%205-72%20tests%20passing-25A162?style=flat-square&logo=junit5&logoColor=white" alt="JUnit 5 — 72 tests passing">
-  <img src="https://img.shields.io/badge/JaCoCo%20Core-97.5%25%20line-25A162?style=flat-square" alt="JaCoCo Core — 97.5% line">
+  <img src="https://img.shields.io/badge/JUnit%205-77%20tests%20passing-25A162?style=flat-square&logo=junit5&logoColor=white" alt="JUnit 5 — 77 tests passing">
+  <img src="https://img.shields.io/badge/JaCoCo%20Core-97.3%25%20line-25A162?style=flat-square" alt="JaCoCo Core — 97.3% line">
   <img src="https://img.shields.io/badge/Spotless-Palantir%20Format-4B32C3?style=flat-square" alt="Spotless — Palantir Format">
   <img src="https://img.shields.io/badge/Checkstyle-0%20violations-25A162?style=flat-square" alt="Checkstyle — 0 violations">
   <img src="https://img.shields.io/badge/PMD%207-CC%20%3C%3D%2010-25A162?style=flat-square" alt="PMD 7 — CC <= 10">
@@ -49,13 +49,21 @@
 
 ## Документация и проектирование (ПР-3)
 
-- Контракт API: [docs/openapi.yaml](docs/openapi.yaml)
+Обязательные артефакты ПР-3 (строго по `task3.md`):
+
+- [docs/layered-architecture.md](docs/layered-architecture.md) — 4-слойная архитектура (`flowchart LR`) с привязкой к проблемам прототипа `№01`–`№07`
+- [docs/openapi.yaml](docs/openapi.yaml) — контракт API (`OpenAPI 3.0.3`, `200`/`400`/`404`/`405`/`500`/`503` и примеры)
+- [docs/c4-container.md](docs/c4-container.md) — диаграмма контейнеров (`C4Container`)
+- [docs/c4-component.md](docs/c4-component.md) — компонентная диаграмма контейнера API Service (`C4Component`) и порядок вызовов `1..9`
+- [docs/rationale.md](docs/rationale.md) — пояснительная записка (проблемы прототипа → 10 quality attributes → trade-offs)
+
+Дополнительные проектные и эксплуатационные материалы:
+
 - Правила алертинга Prometheus: [docs/monitoring/prometheus-alerts.yml](docs/monitoring/prometheus-alerts.yml)
-- Диаграммы архитектуры (Mermaid):
-  - [C4 Container Diagram](docs/diagrams/01_c4_container.md)
-  - [Layer & Dependency Rule](docs/diagrams/02_components_layers.md)
+- Диаграммы Use Cases & Sequence (Mermaid):
   - [Use Cases (UC-01 .. UC-04)](docs/diagrams/03_use_cases.md)
   - [Sequence Diagram (`/api/v1/reviews/classify`)](docs/diagrams/04_sequence_classify.md)
+  - [Legacy Diagrams (C4/Layers)](docs/diagrams/01_c4_container.md), [Components/Layers](docs/diagrams/02_components_layers.md)
 - Решения (ADR):
   - [ADR-001: JDK HttpServer, Virtual Threads и OpenJDK 25 LTS](docs/adr/ADR-001-http-server-and-java25-lts.md)
   - [ADR-002: Формат словаря (JSON + SHA-256), лимиты и v1.0/v1.1](docs/adr/ADR-002-model-format-and-cold-start.md)

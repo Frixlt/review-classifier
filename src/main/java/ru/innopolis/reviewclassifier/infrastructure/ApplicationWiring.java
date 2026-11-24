@@ -82,7 +82,7 @@ public final class ApplicationWiring implements AutoCloseable {
                 useCase, objectMapper, metricsAdapter, metricsAdapter, clockPort, config.maxConcurrentRequests());
         HealthHandler livenessHandler = new HealthHandler(modelWeightsLoader, objectMapper, false);
         HealthHandler readinessHandler = new HealthHandler(modelWeightsLoader, objectMapper, true);
-        MetricsHandler metricsHandler = new MetricsHandler(metricsAdapter);
+        MetricsHandler metricsHandler = new MetricsHandler(metricsAdapter, objectMapper, clockPort);
 
         this.server = new ReviewHttpServer(
                 config.host(),

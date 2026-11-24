@@ -26,7 +26,7 @@ package: ## Build executable fat-JAR (skipping tests)
 
 run: ## Build if needed and run HTTP server locally
 	@if [ ! -f $(JAR) ]; then $(MVN) -B package -DskipTests; fi
-	MODEL_PATH=data/sentiment_v1.json MODEL_SHA256_PATH=data/sentiment_v1.json.sha256 APP_PORT=$(PORT) $(JAVA_HOME)/bin/java -jar $(JAR)
+	APP_PORT=$(PORT) $(JAVA_HOME)/bin/java -jar $(JAR)
 
 format: ## Auto-format Java sources with Spotless
 	$(MVN) -B spotless:apply

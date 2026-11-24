@@ -81,6 +81,13 @@ class ReviewHttpServerIntegrationTest {
                     .isEqualTo(404);
             assertThat(get(client, baseUrl + "/no-such-route").statusCode()).isEqualTo(404);
 
+            HttpResponse<String> metricsNotFound = get(client, baseUrl + "/metrics/unknown");
+            assertThat(metricsNotFound.statusCode()).isEqualTo(404);
+            assertThat(metricsNotFound.headers().firstValue("Content-Type"))
+                    .hasValueSatisfying(ct -> assertThat(ct).contains("application/json"));
+            JsonNode metricsErrJson = objectMapper.readTree(metricsNotFound.body());
+            assertThat(metricsErrJson.get("status").asInt()).isEqualTo(404);
+
             // GET on POST endpoint -> 405 with Allow: POST.
             HttpResponse<String> wrongMethod = get(client, baseUrl + "/api/v1/reviews/classify");
             assertThat(wrongMethod.statusCode()).isEqualTo(405);
@@ -142,7 +149,7 @@ class ReviewHttpServerIntegrationTest {
     }
 
     @Test
-    void respondsQuicklyWhenQaSlowOrDownAndHandlesConcurrentBurstUnder100MsP95(@TempDir Path tempDir) throws Exception {
+    void respondsQuicklyWhenQaSlowOrDownAndMeasuresConcurrentBurstLatencies(@TempDir Path tempDir) throws Exception {
         AtomicInteger qaStatus = new AtomicInteger(500);
         AtomicInteger qaDelayMs = new AtomicInteger(1500);
         Queue<String> qaPayloads = new ConcurrentLinkedQueue<>();
@@ -179,6 +186,10 @@ class ReviewHttpServerIntegrationTest {
                 wiring.start();
                 String baseUrl = "http://127.0.0.1:" + wiring.getServer().getPort();
 
+                assertThat(postJson(client, baseUrl + "/api/v1/reviews/classify", validPayload(5, "Хороший товар"))
+                                .statusCode())
+                        .isEqualTo(200);
+
                 long t0 = System.nanoTime();
                 HttpResponse<String> resp = postJson(
                         client, baseUrl + "/api/v1/reviews/classify", validPayload(1, "Ужасный брак, сломался"));
@@ -188,12 +199,20 @@ class ReviewHttpServerIntegrationTest {
                 assertThat(elapsedMs).isLessThan(500L);
                 assertThat(Files.readAllLines(outboxPath)).isNotEmpty();
 
-                // Concurrent burst of 120 positive requests.
+                // Concurrent burst of 120 positive requests with per-request client latency percentiles.
+                Queue<Double> latenciesMs = new ConcurrentLinkedQueue<>();
                 List<CompletableFuture<HttpResponse<String>>> futures = java.util.stream.IntStream.range(0, 120)
-                        .mapToObj(i -> postJsonAsync(
-                                client,
-                                baseUrl + "/api/v1/reviews/classify",
-                                validPayload(5, "Отличный и качественный товар " + i)))
+                        .mapToObj(i -> {
+                            long reqStartNanos = System.nanoTime();
+                            return postJsonAsync(
+                                            client,
+                                            baseUrl + "/api/v1/reviews/classify",
+                                            validPayload(5, "Отличный и качественный товар " + i))
+                                    .thenApply(response -> {
+                                        latenciesMs.add((System.nanoTime() - reqStartNanos) / 1_000_000.0);
+                                        return response;
+                                    });
+                        })
                         .toList();
                 CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
                         .join();
@@ -201,8 +220,15 @@ class ReviewHttpServerIntegrationTest {
                     assertThat(future.get().statusCode()).isEqualTo(200);
                 }
 
+                List<Double> sortedLatencies = latenciesMs.stream().sorted().toList();
+                assertThat(sortedLatencies).hasSize(120);
+                double p95Ms = sortedLatencies.get((int) Math.ceil(0.95 * sortedLatencies.size()) - 1);
+                double p99Ms = sortedLatencies.get((int) Math.ceil(0.99 * sortedLatencies.size()) - 1);
+                assertThat(p95Ms).isLessThanOrEqualTo(100.0);
+                assertThat(p99Ms).isLessThanOrEqualTo(250.0);
+
                 HttpResponse<String> metrics = get(client, baseUrl + "/metrics");
-                assertThat(metrics.body()).contains("reviews_total 121").contains("http_request_duration_ms_bucket");
+                assertThat(metrics.body()).contains("reviews_total 122").contains("http_request_duration_ms_bucket");
             }
 
             // Simulate restart after QA recovers -> durable outbox drains cleanly.
@@ -217,6 +243,39 @@ class ReviewHttpServerIntegrationTest {
             }
         } finally {
             mockQa.stop(0);
+        }
+    }
+
+    @Test
+    void preservesCapitalizedProductNounsAndAdjectivesWithoutFlippingCriticality(@TempDir Path tempDir)
+            throws Exception {
+        Path outboxPath = tempDir.resolve("no_false_positive_outbox.jsonl");
+        AppConfig config = buildTestConfig(
+                Path.of("data/sentiment_v1.json"), Path.of("data/sentiment_v1.json.sha256"), outboxPath, "");
+
+        try (ApplicationWiring wiring = new ApplicationWiring(config);
+                HttpClient client = HttpClient.newHttpClient()) {
+            wiring.loadModel();
+            wiring.start();
+            String baseUrl = "http://127.0.0.1:" + wiring.getServer().getPort();
+
+            List<String> positiveTexts = List.of(
+                    "Отличный Пластилин без брака",
+                    "Отличный пластилин без брака",
+                    "Хороший Пластилин",
+                    "Отличный Витамин");
+
+            for (String text : positiveTexts) {
+                HttpResponse<String> response =
+                        postJson(client, baseUrl + "/api/v1/reviews/classify", validPayload(5, text));
+                assertThat(response.statusCode()).isEqualTo(200);
+                JsonNode json = objectMapper.readTree(response.body());
+                assertThat(json.get("maskedText").asText()).isEqualTo(text);
+                assertThat(json.get("sentiment").asText()).isEqualTo("positive");
+                assertThat(json.get("isCritical").asBoolean()).isFalse();
+            }
+
+            assertThat(Files.exists(outboxPath)).isFalse();
         }
     }
 

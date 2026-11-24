@@ -11,10 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,20 +32,21 @@ final class FileOutboxStore {
     }
 
     List<OutboxEntry> loadPending() {
-        if (outboxPath == null || !Files.isRegularFile(outboxPath)) {
+        if (outboxPath == null || !Files.exists(outboxPath)) {
             return List.of();
         }
         ioLock.lock();
         try {
-            Map<UUID, OutboxEntry> recovered = new LinkedHashMap<>();
-            List<String> lines = Files.readAllLines(outboxPath, StandardCharsets.UTF_8);
-            for (String rawLine : lines) {
-                parseRecoveredEntry(rawLine, recovered);
+            String rawContent = new String(Files.readAllBytes(outboxPath), StandardCharsets.UTF_8);
+            OutboxRecoverySupport.RecoveryOutcome outcome =
+                    OutboxRecoverySupport.recover(rawContent, outboxPath, mapper);
+            if (outcome.repairNeeded()) {
+                rewriteAllLocked(outcome.entries());
             }
-            return List.copyOf(recovered.values());
+            return outcome.entries();
         } catch (IOException ex) {
             LOG.error("Failed to load durable QA outbox from {}: {}", outboxPath, ex.getMessage(), ex);
-            return List.of();
+            throw new IllegalStateException("Failed to load durable QA outbox from " + outboxPath, ex);
         } finally {
             ioLock.unlock();
         }
@@ -68,27 +66,28 @@ final class FileOutboxStore {
         }
         ioLock.lock();
         try {
-            ensureParentDir();
-            StringBuilder payload = new StringBuilder();
-            for (OutboxEntry entry : entries) {
-                payload.append(mapper.writeValueAsString(entry)).append('\n');
-            }
-            Path tempFile = outboxPath.resolveSibling(outboxPath.getFileName() + ".tmp");
-            byte[] bytes = payload.toString().getBytes(StandardCharsets.UTF_8);
-            try (FileChannel channel = FileChannel.open(
-                    tempFile,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING)) {
-                writeFully(channel, bytes);
-                channel.force(true);
-            }
-            moveReplacing(tempFile, outboxPath);
+            rewriteAllLocked(entries);
         } catch (IOException ex) {
             LOG.error("Failed to compact durable QA outbox {}: {}", outboxPath, ex.getMessage(), ex);
         } finally {
             ioLock.unlock();
         }
+    }
+
+    private void rewriteAllLocked(Collection<OutboxEntry> entries) throws IOException {
+        ensureParentDir();
+        StringBuilder payload = new StringBuilder();
+        for (OutboxEntry entry : entries) {
+            payload.append(mapper.writeValueAsString(entry)).append('\n');
+        }
+        Path tempFile = outboxPath.resolveSibling(outboxPath.getFileName() + ".tmp");
+        byte[] bytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+        try (FileChannel channel = FileChannel.open(
+                tempFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
+            writeFully(channel, bytes);
+            channel.force(true);
+        }
+        moveReplacing(tempFile, outboxPath);
     }
 
     private void appendJsonObject(Object payloadObject) {
@@ -112,29 +111,18 @@ final class FileOutboxStore {
         }
     }
 
-    private void parseRecoveredEntry(String rawLine, Map<UUID, OutboxEntry> target) {
-        String trimmed = rawLine.trim();
-        if (trimmed.isEmpty()) {
-            return;
-        }
-        try {
-            OutboxEntry entry = mapper.readValue(trimmed, OutboxEntry.class);
-            if (entry.card() != null && entry.card().reviewId() != null) {
-                target.put(entry.card().reviewId(), entry);
-            }
-        } catch (IOException ex) {
-            LOG.warn("Skipping corrupted line in QA outbox {}: {}", outboxPath, ex.getMessage());
-        }
+    private void ensureParentDir() throws IOException {
+        ensureParentDir(outboxPath);
     }
 
-    private void ensureParentDir() throws IOException {
-        Path parent = outboxPath.getParent();
+    static void ensureParentDir(Path targetPath) throws IOException {
+        Path parent = targetPath.getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
     }
 
-    private static void writeFully(FileChannel channel, byte[] bytes) throws IOException {
+    static void writeFully(FileChannel channel, byte[] bytes) throws IOException {
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
         while (buffer.hasRemaining()) {
             channel.write(buffer);

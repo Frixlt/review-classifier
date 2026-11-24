@@ -15,7 +15,8 @@ import ru.innopolis.reviewclassifier.domain.service.TextPreprocessor;
 
 /**
  * Evaluates baseline unigram classification accuracy against the production model dictionary
- * over a curated Russian e-commerce control dataset (NFR-03 >= 89%, AC-21).
+ * over an internal curated 40-review Russian e-commerce regression dataset (>= 89% regression gate;
+ * formal NFR-03 / AC-21 acceptance requires an external DS holdout dataset).
  */
 class AccuracyDatasetTest {
 

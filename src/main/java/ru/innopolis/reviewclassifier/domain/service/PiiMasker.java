@@ -13,8 +13,9 @@ public final class PiiMasker {
     private static final String NAME_TOKEN = "[NAME]";
     private static final Locale RU_LOCALE = Locale.forLanguageTag("ru");
 
-    private static final String NON_SURNAME_GUARD =
-            "(?!(?iu:товар|заказ|брак|слом|полом|дефект|неисправ|достав|привез|опозда|задерж|курьер|магазин|сервис))";
+    private static final String NON_SURNAME_GUARD = "(?!(?iu:товар|заказ|брак|слом|полом|дефект|неисправ|достав|привез"
+            + "|опозда|задерж|курьер|магазин|сервис|телефон|экран|дизайн|ноутбук|корпус"
+            + "|кнопк|пластик|разъем|разъём|звук))";
 
     private static final String CUE_LOOKBEHIND =
             "(?u)(?<=(?i:меня\\s{1,5}зовут|с\\s{1,5}уважением,?|покупатель|клиент)[\\s\\p{Zs}])";
@@ -30,13 +31,26 @@ public final class PiiMasker {
             + "Владислав(?:а|у|ом|е)?|Борис(?:а|у|ом|е)?|Антон(?:а|у|ом|е)?|"
             + "Виктор(?:а|у|ом|е)?|Игор(?:ь|я|ю|ем|е)|Олег(?:а|у|ом|е)?|"
             + "Юри(?:й|я|ю|ем|и|е)|Даниил(?:а|у|ом|е)?|"
+            + "Глеб(?:а|у|ом|е)?|Богдан(?:а|у|ом|е)?|Тимур(?:а|у|ом|е)?|"
+            + "Руслан(?:а|у|ом|е)?|Артур(?:а|у|ом|е)?|Тарас(?:а|у|ом|е)?|"
+            + "Аркади(?:й|я|ю|ем|и|е)|"
+            + "Степан(?:а|у|ом|е)?|Константин(?:а|у|ом|е)?|Георги(?:й|я|ю|ем|и|е)|"
+            + "Станислав(?:а|у|ом|е)?|Валентин(?:а|у|ом|е)?|Вячеслав(?:а|у|ом|е)?|"
+            + "Григори(?:й|я|ю|ем|и|е)|Ф[её]дор(?:а|у|ом|е)?|Матве(?:й|я|ю|ем|е)|"
+            + "Тимофе(?:й|я|ю|ем|е)|Ярослав(?:а|у|ом|е)?|Вадим(?:а|у|ом|е)?|"
+            + "Марат(?:а|у|ом|е)?|Рустем(?:а|у|ом|е)?|"
             + "Анн(?:а|ы|е|у|ой)|Мари(?:я|и|ю|ей)|Елен(?:а|ы|е|у|ой)|"
             + "Ольг(?:а|и|е|у|ой)|Наталь(?:я|и|е|ю|ей)|Татьян(?:а|ы|е|у|ой)|"
             + "Екатерин(?:а|ы|е|у|ой)|Светлан(?:а|ы|е|у|ой)|Ирин(?:а|ы|е|у|ой)|"
             + "Юли(?:я|и|ю|ей)|Дарь(?:я|и|е|ю|ей)|Анастаси(?:я|и|ю|ей)|"
             + "Виктори(?:я|и|ю|ей)|Полин(?:а|ы|е|у|ой)|Ксени(?:я|и|ю|ей)|"
             + "Оксан(?:а|ы|е|у|ой)|Марин(?:а|ы|е|у|ой)|Алин(?:а|ы|е|у|ой)|"
-            + "Кристин(?:а|ы|е|у|ой)|Соф(?:ия|ьи|ье|ью|ьей|ья)|Надежд(?:а|ы|е|у|ой)";
+            + "Кристин(?:а|ы|е|у|ой)|Соф(?:ия|ьи|ье|ью|ьей|ья)|Надежд(?:а|ы|е|у|ой)|"
+            + "Вер(?:а|ы|е|у|ой)|Валери(?:я|и|ю|ей)|Евгени(?:я|и|ю|ей)|"
+            + "Тамар(?:а|ы|е|у|ой)|Людмил(?:а|ы|е|у|ой)|Ларис(?:а|ы|е|у|ой)|"
+            + "Галин(?:а|ы|е|у|ой)|Олес(?:я|и|е|ю|ей)|Диан(?:а|ы|е|у|ой)|"
+            + "Маргарит(?:а|ы|е|у|ой)|Алис(?:а|ы|е|у|ой)|Жанн(?:а|ы|е|у|ой)|"
+            + "Инн(?:а|ы|е|у|ой)|Ян(?:а|ы|е|у|ой)";
 
     private static final String LATIN_FIRST_NAMES =
             "John|Jane|Alex|Alexander|Michael|Mike|David|Daniel|James|Robert|William|Richard|"
@@ -88,10 +102,32 @@ public final class PiiMasker {
                     + "(?![\\p{L}])",
             Pattern.UNICODE_CASE);
 
+    private static final String CYRILLIC_SURNAME_SUFFIXES = "(?:(?:ов|ев|ёв|ин|ын)(?:а|у|ы|ым|ом|ой|ей|е)?|"
+            + "(?:ск|цк)(?:ий|ого|ому|им|ом|ая|ой|ую|ей)|"
+            + "(?:енко|чук|щук|ук|юк)(?:а|у|ом|е)?)";
+
     private static final Pattern LATIN_COMMON_FULL_NAME_PATTERN = Pattern.compile("(?<![\\p{L}])(?:"
             + "(?:" + LATIN_FIRST_NAMES + ")[ \\t]+[A-Z][a-z]{1,25}"
             + "|(?:" + LATIN_FIRST_NAMES.toUpperCase(Locale.ROOT) + ")[ \\t]+[A-Z]{2,26}"
             + ")(?![\\p{L}])");
+
+    private static final Pattern CYRILLIC_SURNAME_BEFORE_FIRST_NAME_PATTERN = Pattern.compile(
+            "(?<![\\p{L}])(?:"
+                    + NON_SURNAME_GUARD
+                    + "[А-ЯЁ][а-яё]{1,20}"
+                    + CYRILLIC_SURNAME_SUFFIXES
+                    + "[\\s\\p{Zs}]+(?:"
+                    + CYRILLIC_FIRST_NAMES
+                    + ")"
+                    + "|"
+                    + NON_SURNAME_GUARD
+                    + "[А-ЯЁ]{2,21}"
+                    + CYRILLIC_SURNAME_SUFFIXES.toUpperCase(RU_LOCALE)
+                    + "[\\s\\p{Zs}]+(?:"
+                    + CYRILLIC_FIRST_NAMES.toUpperCase(RU_LOCALE)
+                    + ")"
+                    + ")(?![\\p{L}])",
+            Pattern.UNICODE_CASE);
 
     private static final Pattern COMMON_FIRST_NAME_PATTERN = Pattern.compile(
             "(?<![\\p{L}])(?:" + CYRILLIC_FIRST_NAMES + ")(?:[\\s\\p{Zs}]+" + NON_SURNAME_GUARD
@@ -116,6 +152,7 @@ public final class PiiMasker {
         result = GREETING_OR_SIGNATURE_NAME_PATTERN.matcher(result).replaceAll(NAME_TOKEN);
         result = LOWERCASE_CUE_NAME_PATTERN.matcher(result).replaceAll(NAME_TOKEN);
         result = LATIN_COMMON_FULL_NAME_PATTERN.matcher(result).replaceAll(NAME_TOKEN);
+        result = CYRILLIC_SURNAME_BEFORE_FIRST_NAME_PATTERN.matcher(result).replaceAll(NAME_TOKEN);
         result = COMMON_FIRST_NAME_PATTERN.matcher(result).replaceAll(NAME_TOKEN);
         return ALL_CAPS_FIRST_NAME_PATTERN.matcher(result).replaceAll(NAME_TOKEN);
     }

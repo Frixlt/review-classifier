@@ -101,4 +101,27 @@ class PiiMaskerTest {
         String clean = "Отличный ноутбук, доставка быстрая, экран яркий 16 дюймов!";
         assertThat(masker.mask(clean)).isEqualTo(clean);
     }
+
+    @Test
+    void masksConfirmedNamesAndPreservesCapitalizedProductNounsAndAdjectives() {
+        assertThat(masker.mask("Отличный Пластилин без брака")).isEqualTo("Отличный Пластилин без брака");
+        assertThat(masker.mask("Отличный пластилин без брака")).isEqualTo("Отличный пластилин без брака");
+        assertThat(masker.mask("Хороший Пластилин")).isEqualTo("Хороший Пластилин");
+        assertThat(masker.mask("Отличный Витамин")).isEqualTo("Отличный Витамин");
+
+        assertThat(masker.mask("Глеб Новиков сообщил о браке")).isEqualTo("[NAME] сообщил о браке");
+        assertThat(masker.mask("Вера Смирнова сообщила о браке")).isEqualTo("[NAME] сообщила о браке");
+        assertThat(masker.mask("Богдан Коваленко жалуется на поломку")).isEqualTo("[NAME] жалуется на поломку");
+        assertThat(masker.mask("Аркадий Ткачук сообщил о браке")).isEqualTo("[NAME] сообщил о браке");
+        assertThat(masker.mask("ГЛЕБ НОВИКОВ сообщил о браке")).isEqualTo("[NAME] сообщил о браке");
+        assertThat(masker.mask("Новиков Глеб сообщил о браке")).isEqualTo("[NAME] сообщил о браке");
+        assertThat(masker.mask("Смирнова Вера сообщила о браке")).isEqualTo("[NAME] сообщила о браке");
+        assertThat(masker.mask("НОВИКОВ ГЛЕБ сообщил о браке")).isEqualTo("[NAME] сообщил о браке");
+        assertThat(masker.mask("Меня зовут Зигмунд Коваленко, товар бракованный"))
+                .isEqualTo("Меня зовут [NAME], товар бракованный");
+
+        assertThat(masker.mask("Выбор Товаров ужасный")).isEqualTo("Выбор Товаров ужасный");
+        assertThat(masker.mask("Качество Экранов плохое")).isEqualTo("Качество Экранов плохое");
+        assertThat(masker.mask("Много Телефонов с браком")).isEqualTo("Много Телефонов с браком");
+    }
 }
