@@ -1,0 +1,239 @@
+openapi: 3.1.0
+info:
+  title: Review Sentiment Classifier API
+  version: 1.0.0
+  description: |
+    Микросервис классификации тональности и критичности отзывов интернет-магазина
+    (Вариант 1, OpenJDK 25 LTS, Clean/Hexagonal Architecture).
+  contact:
+    name: Бердников Максим Александрович (MFAI-01)
+    email: m.berdnikov@innopolis.university
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /api/v1/reviews/classify:
+    post:
+      summary: Классификация тональности и критичности отзыва
+      operationId: classifyReview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewRequestDto"
+            example:
+              reviewId: "11111111-1111-1111-1111-111111111111"
+              orderId: "ORD-2026-1042"
+              rating: 4
+              text: "Меня зовут Иван, +7 (999) 123-45-67 — товар бракованный!"
+              createdAt: "2026-11-24T03:00:00Z"
+      responses:
+        "200":
+          description: Отзыв успешно обработан (включая режим Runtime Fallback)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewResponseDto"
+        "400":
+          description: Ошибка валидации строгого JSON, типов полей или бизнес-ограничений (без отражения входных значений)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponseDto"
+        "404":
+          description: Неизвестный маршрут
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponseDto"
+        "405":
+          description: Метод не поддерживается (допустим только POST)
+          headers:
+            Allow:
+              schema:
+                type: string
+                example: POST
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponseDto"
+        "503":
+          description: Модель не загружена при холодном старте или достигнут лимит конкурентности
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponseDto"
+
+  /health/live:
+    get:
+      summary: Liveness probe
+      operationId: healthLive
+      responses:
+        "200":
+          description: HTTP-процесс запущен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "405":
+          description: Допустим только GET
+          headers:
+            Allow:
+              schema:
+                type: string
+                example: GET
+
+  /health/ready:
+    get:
+      summary: Readiness probe
+      operationId: healthReady
+      responses:
+        "200":
+          description: Словарь весов загружен и прошёл проверку SHA-256
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "503":
+          description: Модель не готова к обработке запросов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /metrics:
+    get:
+      summary: Prometheus text-format metrics
+      operationId: prometheusMetrics
+      responses:
+        "200":
+          description: Счётчики, гистограммы latency и backlog gauges
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /actuator/prometheus:
+    get:
+      summary: Prometheus text-format metrics alias (AC-25)
+      operationId: actuatorPrometheusMetrics
+      responses:
+        "200":
+          description: Алиас к /metrics для совместимости с мониторингом
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  schemas:
+    ReviewRequestDto:
+      type: object
+      additionalProperties: false
+      required:
+        - reviewId
+        - orderId
+        - rating
+        - text
+        - createdAt
+      properties:
+        reviewId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          minLength: 1
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        text:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        createdAt:
+          type: string
+          format: date-time
+
+    ReviewResponseDto:
+      type: object
+      required:
+        - reviewId
+        - orderId
+        - rating
+        - sentiment
+        - isCritical
+        - fallbackUsed
+        - issueCategory
+        - maskedText
+        - processingTimeMs
+      properties:
+        reviewId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+        rating:
+          type: integer
+        sentiment:
+          type:
+            - string
+            - "null"
+          enum:
+            - positive
+            - negative
+            - null
+        isCritical:
+          type: boolean
+        fallbackUsed:
+          type: boolean
+        issueCategory:
+          type: string
+          enum:
+            - DEFECT
+            - DELIVERY_ISSUE
+            - OTHER
+        maskedText:
+          type: string
+        processingTimeMs:
+          type: integer
+          format: int64
+
+    ErrorResponseDto:
+      type: object
+      required:
+        - timestamp
+        - status
+        - error
+        - message
+        - details
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: string
+
+    HealthStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - UP
+            - DOWN
+        reason:
+          type: string

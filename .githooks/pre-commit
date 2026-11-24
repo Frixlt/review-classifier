@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-25-openjdk}"
+
+# Block accidentally staged secrets or .env files
+if git diff --cached --name-only | grep -E '(^|/)\.env$|\.(pem|key|p12|jks)$' >/dev/null 2>&1; then
+    echo "ERROR: Refusing to commit .env or secret key files."
+    exit 1
+fi
+
+MVN="./mvnw"
+if [ ! -x "$MVN" ]; then
+    MVN="mvn"
+fi
+
+echo "[pre-commit] Running Spotless & Checkstyle..."
+"$MVN" -B -q spotless:check checkstyle:check

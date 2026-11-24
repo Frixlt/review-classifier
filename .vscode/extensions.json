@@ -1,0 +1,21 @@
+{
+  "recommendations": [
+    "vscjava.vscode-java-pack",
+    "redhat.java",
+    "vscjava.vscode-java-debug",
+    "vscjava.vscode-java-test",
+    "vscjava.vscode-maven",
+    "vscjava.vscode-java-dependency",
+    "sonarsource.sonarlint-vscode",
+    "editorconfig.editorconfig",
+    "usernamehw.errorlens",
+    "redhat.vscode-xml",
+    "redhat.vscode-yaml",
+    "bierner.markdown-mermaid",
+    "ms-azuretools.vscode-docker",
+    "github.vscode-github-actions",
+    "eamodio.gitlens",
+    "gruntfuggly.todo-tree",
+    "mikestead.dotenv"
+  ]
+}

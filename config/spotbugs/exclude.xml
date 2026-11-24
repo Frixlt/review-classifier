@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+    xmlns="https://github.com/spotbugs/filter/3.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/4.8.6/spotbugs/etc/findbugsfilter.xsd">
+    <!-- Constructor injection of ports/mappers and managed accessor wiring in DI/adapter boundary classes -->
+    <Match>
+        <Or>
+            <Class name="ru.innopolis.reviewclassifier.application.ClassifyReviewUseCase"/>
+            <Class name="ru.innopolis.reviewclassifier.adapters.inbound.http.ClassifyReviewHandler"/>
+            <Class name="ru.innopolis.reviewclassifier.adapters.inbound.http.HealthHandler"/>
+            <Class name="ru.innopolis.reviewclassifier.adapters.inbound.http.MetricsHandler"/>
+            <Class name="ru.innopolis.reviewclassifier.adapters.outbound.JsonModelWeightsLoader"/>
+            <Class name="ru.innopolis.reviewclassifier.adapters.outbound.JsonStdoutAuditLogger"/>
+            <Class name="ru.innopolis.reviewclassifier.adapters.outbound.RetryableQaAdapter"/>
+            <Class name="ru.innopolis.reviewclassifier.infrastructure.ApplicationWiring"/>
+        </Or>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>

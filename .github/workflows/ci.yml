@@ -1,0 +1,60 @@
+name: CI Quality Gate
+
+on:
+  push:
+    branches: ["main", "feature/*", "fix/*", "refactor/*", "chore/*"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25 LTS (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "25"
+          cache: "maven"
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x mvnw
+
+      - name: Run full verification (Spotless, Checkstyle, PMD, SpotBugs, JUnit, JaCoCo, Shade)
+        run: ./mvnw --batch-mode verify
+
+      - name: Verify coverage gate CLI target
+        run: ./mvnw --batch-mode test jacoco:report jacoco:check
+
+      - name: Upload JaCoCo coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+
+  docker-build:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build production container image
+        run: docker build -t review-classifier:ci .
+
+      - name: Smoke check container health probe
+        run: |
+          docker run -d --rm --name rc-ci -p 18080:8080 review-classifier:ci
+          trap 'docker stop rc-ci >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:18080/health/ready; then
+              echo ""
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1

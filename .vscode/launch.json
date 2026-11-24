@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run ReviewClassifier (Java 25)",
+      "request": "launch",
+      "mainClass": "ru.innopolis.reviewclassifier.infrastructure.Main",
+      "projectName": "review-classifier",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "JAVA_HOME": "/usr/lib/jvm/java-25-openjdk",
+        "APP_HOST": "127.0.0.1",
+        "APP_PORT": "8080",
+        "MODEL_PATH": "data/sentiment_v1.json",
+        "MODEL_SHA256_PATH": "data/sentiment_v1.json.sha256",
+        "OUTBOX_LOG_PATH": "logs/qa_outbox.jsonl",
+        "SLA_LIMIT_SECONDS": "900",
+        "QA_MAX_RETRIES": "3",
+        "QA_RETRY_DELAY_MS": "100"
+      },
+      "console": "integratedTerminal"
+    }
+  ]
+}

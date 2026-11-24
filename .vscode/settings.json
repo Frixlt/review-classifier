@@ -1,0 +1,49 @@
+{
+  "java.jdt.ls.java.home": "/usr/lib/jvm/java-25-openjdk",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-25",
+      "path": "/usr/lib/jvm/java-25-openjdk",
+      "default": true
+    }
+  ],
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.maven.downloadSources": true,
+  "java.saveActions.organizeImports": true,
+  "java.sources.organizeImports.starThreshold": 9999,
+  "java.sources.organizeImports.staticStarThreshold": 9999,
+  "terminal.integrated.env.linux": {
+    "JAVA_HOME": "/usr/lib/jvm/java-25-openjdk",
+    "PATH": "/usr/lib/jvm/java-25-openjdk/bin:${env:PATH}"
+  },
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": false,
+    "editor.rulers": [120]
+  },
+  "[xml]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "files.exclude": {
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true,
+    "**/target/classes": true,
+    "**/target/test-classes": true
+  },
+  "search.exclude": {
+    "**/target": true,
+    "**/.mvn": true,
+    "**/logs": true
+  },
+  "maven.terminal.useJavaHome": true,
+  "makefile.configureOnOpen": false
+}

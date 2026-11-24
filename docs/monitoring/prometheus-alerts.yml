@@ -1,0 +1,37 @@
+groups:
+  - name: review-classifier-sla-and-latency
+    rules:
+      - alert: ReviewClassifierQaOutboxAgeWarning
+        expr: qa_outbox_oldest_age_seconds > 600
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "QA outbox oldest incident exceeds 10 minutes (approaching 15-min SLA)"
+          description: "Oldest pending critical incident age is {{ $value }}s (> 600s)."
+
+      - alert: ReviewClassifierSlaBreachCritical
+        expr: increase(sla_breach_total[5m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical review exceeded 15-minute QA delivery SLA (FR-12, DEC-06)"
+          description: "One or more critical incidents exceeded the 900s SLA_BREACH_EXTERNAL threshold."
+
+      - alert: ReviewClassifierHttpLatencyP95High
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_ms_bucket[5m])) by (le)) > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HTTP p95 classification latency above NFR-06 100ms budget"
+          description: "Observed p95 latency is {{ $value }}ms."
+
+      - alert: ReviewClassifierRuntimeFallbackSpike
+        expr: rate(fallback_total[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Runtime Fallback activated on model inference errors or timeouts (AC-05)"
+          description: "Runtime fallback rate increased; check model weights or INFERENCE_TIMEOUT_MS."

@@ -1,0 +1,17 @@
+target/
+logs/
+.env
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+replay_pid*
+.classpath
+.project
+.settings/
+.factorypath
+*.iml
+.idea/
+.DS_Store

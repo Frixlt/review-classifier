@@ -1,0 +1,22 @@
+services:
+  review-classifier:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8080
+      - MODEL_PATH=/opt/models/sentiment_v1.json
+      - MODEL_SHA256_PATH=/opt/models/sentiment_v1.json.sha256
+      - OUTBOX_LOG_PATH=/app/logs/qa_outbox.jsonl
+      - SLA_LIMIT_SECONDS=900
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./data:/opt/models:ro
+      - app_logs:/app/logs
+    restart: unless-stopped
+
+volumes:
+  app_logs:
