@@ -49,8 +49,6 @@
 
 ## Документация и проектирование (ПР-3)
 
-Обязательные артефакты ПР-3 (строго по `task3.md`):
-
 - [docs/layered-architecture.md](docs/layered-architecture.md) — 4-слойная архитектура (`flowchart LR`) с привязкой к проблемам прототипа `№01`–`№07`
 - [docs/openapi.yaml](docs/openapi.yaml) — контракт API (`OpenAPI 3.0.3`, `200`/`400`/`404`/`405`/`500`/`503` и примеры)
 - [docs/c4-container.md](docs/c4-container.md) — диаграмма контейнеров (`C4Container`)
