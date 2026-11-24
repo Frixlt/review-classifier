@@ -61,7 +61,6 @@
 - Диаграммы Use Cases & Sequence (Mermaid):
   - [Use Cases (UC-01 .. UC-04)](docs/diagrams/03_use_cases.md)
   - [Sequence Diagram (`/api/v1/reviews/classify`)](docs/diagrams/04_sequence_classify.md)
-  - [Legacy Diagrams (C4/Layers)](docs/diagrams/01_c4_container.md), [Components/Layers](docs/diagrams/02_components_layers.md)
 - Решения (ADR):
   - [ADR-001: JDK HttpServer, Virtual Threads и OpenJDK 25 LTS](docs/adr/ADR-001-http-server-and-java25-lts.md)
   - [ADR-002: Формат словаря (JSON + SHA-256), лимиты и v1.0/v1.1](docs/adr/ADR-002-model-format-and-cold-start.md)

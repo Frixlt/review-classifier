@@ -10,7 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * Shared strict Jackson ObjectMapper configuration for ISO-8601 timestamps and
- * contract-enforcing JSON deserialization without implicit primitive coercions (M2).
+ * contract-enforcing JSON deserialization without implicit primitive coercions.
  */
 public final class JsonMapperFactory {
     private JsonMapperFactory() {}

@@ -21,7 +21,7 @@ import ru.innopolis.reviewclassifier.domain.port.MetricsPort;
 
 /**
  * HTTP handler for POST /api/v1/reviews/classify enforcing strict path matching,
- * Allow header, backpressure concurrency limit, strict JSON validation, and zero PII echo (B2, M2, M8, m3).
+ * Allow header, backpressure concurrency limit, strict JSON validation, and zero PII echo.
  */
 public final class ClassifyReviewHandler implements HttpHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ClassifyReviewHandler.class);

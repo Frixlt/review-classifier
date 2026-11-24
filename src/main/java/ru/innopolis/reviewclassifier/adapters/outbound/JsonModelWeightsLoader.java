@@ -19,7 +19,7 @@ import ru.innopolis.reviewclassifier.domain.port.ModelWeightsPort;
 
 /**
  * Safely loads sentiment weights from structured JSON with SHA-256 integrity verification,
- * size bounds, and real wall-clock load deadline, rejecting ObjectInputStream deserialization (FR-14, NFR-09, M7).
+ * size bounds, and real wall-clock load deadline, rejecting ObjectInputStream deserialization (FR-14, NFR-09).
  */
 public final class JsonModelWeightsLoader implements ModelWeightsPort {
     public static final long MAX_MODEL_FILE_BYTES = 10L * 1024 * 1024;

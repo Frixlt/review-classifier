@@ -14,7 +14,7 @@
         </encoder>
     </appender>
 
-    <!-- Non-blocking async queue for structured audit records with zero event dropping (FR-15, DEC-04, m4) -->
+    <!-- Non-blocking async queue for structured audit records with zero event dropping (FR-15, DEC-04) -->
     <appender name="AUDIT_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>4096</queueSize>
         <discardingThreshold>0</discardingThreshold>

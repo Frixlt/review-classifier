@@ -8,7 +8,7 @@ import java.util.Set;
 import ru.innopolis.reviewclassifier.adapters.outbound.MetricsExporter;
 import ru.innopolis.reviewclassifier.domain.port.ClockPort;
 
-/** Prometheus text exposition endpoint handler supporting /metrics and /actuator/prometheus (FR-15, AC-25, m2, m6). */
+/** Prometheus text exposition endpoint handler supporting /metrics and /actuator/prometheus (FR-15, AC-25). */
 public final class MetricsHandler implements HttpHandler {
     private static final int HTTP_OK = 200;
     private static final int HTTP_METHOD_NOT_ALLOWED = 405;

@@ -24,7 +24,7 @@ import ru.innopolis.reviewclassifier.domain.port.QualityAssurancePort;
 
 /**
  * Thread-safe durable Outbox + asynchronous Retry adapter for Quality Assurance delivery
- * with restart recovery and independent 15-minute SLA breach detection (FR-11, FR-12, DEC-06, B3, M4, M5, M6).
+ * with restart recovery and independent 15-minute SLA breach detection (FR-11, FR-12, DEC-06).
  */
 public final class RetryableQaAdapter implements QualityAssurancePort, AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(RetryableQaAdapter.class);

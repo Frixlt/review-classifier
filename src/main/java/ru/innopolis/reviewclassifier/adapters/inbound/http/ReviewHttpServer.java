@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import ru.innopolis.reviewclassifier.domain.port.ClockPort;
 
-/** Embedded HTTP server backed by JDK HttpServer and Java 25 virtual threads (m2, m3). */
+/** Embedded HTTP server backed by JDK HttpServer and Java 25 virtual threads. */
 public final class ReviewHttpServer {
     private final HttpServer server;
     private final ExecutorService executor;

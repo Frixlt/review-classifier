@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.Map;
 import ru.innopolis.reviewclassifier.domain.port.ModelWeightsPort;
 
-/** Liveness and readiness HTTP probe handler enforcing exact path and Allow header (FR-14, AC-22, AC-23, m3). */
+/** Liveness and readiness HTTP probe handler enforcing exact path and Allow header (FR-14, AC-22, AC-23). */
 public final class HealthHandler implements HttpHandler {
     private static final int HTTP_OK = 200;
     private static final int HTTP_METHOD_NOT_ALLOWED = 405;

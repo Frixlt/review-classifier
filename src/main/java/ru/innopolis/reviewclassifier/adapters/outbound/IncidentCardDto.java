@@ -6,7 +6,7 @@ import ru.innopolis.reviewclassifier.domain.model.IncidentCard;
 
 /**
  * Outbound JSON wire and outbox DTO for Quality Assurance incidents, serializing Sentiment
- * using lowercase {@code "positive"}/{@code "negative"}/{@code null} per FR-11 (M3).
+ * using lowercase {@code "positive"}/{@code "negative"}/{@code null} per FR-11.
  */
 public record IncidentCardDto(
         UUID reviewId,

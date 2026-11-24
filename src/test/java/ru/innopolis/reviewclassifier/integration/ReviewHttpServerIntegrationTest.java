@@ -93,7 +93,7 @@ class ReviewHttpServerIntegrationTest {
             assertThat(wrongMethod.statusCode()).isEqualTo(405);
             assertThat(wrongMethod.headers().firstValue("Allow")).contains("POST");
 
-            // Strict JSON validation & zero PII leakage in error responses (B2, M2).
+            // Strict JSON validation & zero PII leakage in error responses.
             assertThat(postJson(client, baseUrl + "/api/v1/reviews/classify", "null")
                             .statusCode())
                     .isEqualTo(400);
@@ -131,7 +131,7 @@ class ReviewHttpServerIntegrationTest {
                             .statusCode())
                     .isEqualTo(400);
 
-            // "поломка" and non-greedy name masking (B4, M1).
+            // "поломка" and non-greedy name masking.
             HttpResponse<String> defectResp = postJson(
                     client,
                     baseUrl + "/api/v1/reviews/classify",

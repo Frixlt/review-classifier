@@ -13,7 +13,7 @@ import ru.innopolis.reviewclassifier.domain.port.MetricsPort;
 
 /**
  * Package-private helper managing QA delivery SLA breach detection, structured audit emission,
- * delivery latency metrics, and outbox backlog statistics (M5, M6).
+ * delivery latency metrics, and outbox backlog statistics.
  */
 final class QaOutboxSlaTracker {
     private static final Logger LOG = LoggerFactory.getLogger(QaOutboxSlaTracker.class);

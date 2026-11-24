@@ -11,7 +11,7 @@ import java.time.Duration;
 import java.util.Objects;
 
 /**
- * Outbound HTTP transport sending {@link IncidentCardDto} with idempotency key and configurable timeout (M3, M8).
+ * Outbound HTTP transport sending {@link IncidentCardDto} with idempotency key and configurable timeout.
  */
 final class HttpIncidentSender implements RetryableQaAdapter.IncidentSender, AutoCloseable {
     private static final int HTTP_SUCCESS_MIN = 200;

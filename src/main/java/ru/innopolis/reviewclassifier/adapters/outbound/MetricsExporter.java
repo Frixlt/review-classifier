@@ -1,6 +1,6 @@
 package ru.innopolis.reviewclassifier.adapters.outbound;
 
-/** Outbound metrics exposition and adapter-level latency/backlog instrumentation (FR-15, NFR-06, m6). */
+/** Outbound metrics exposition and adapter-level latency/backlog instrumentation (FR-15, NFR-06). */
 public interface MetricsExporter {
     String exportPrometheus();
 

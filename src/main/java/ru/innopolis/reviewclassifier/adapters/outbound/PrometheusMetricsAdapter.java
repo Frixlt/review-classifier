@@ -9,7 +9,7 @@ import ru.innopolis.reviewclassifier.domain.port.MetricsPort;
 
 /**
  * Thread-safe Prometheus metrics collector with lock-free counters, latency histograms,
- * and outbox backlog gauges (FR-15, NFR-06, M6).
+ * and outbox backlog gauges (FR-15, NFR-06).
  */
 public final class PrometheusMetricsAdapter implements MetricsPort, MetricsExporter {
     private final LongAdder reviewsTotal = new LongAdder();

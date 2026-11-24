@@ -18,7 +18,7 @@ import ru.innopolis.reviewclassifier.domain.model.ReviewInput;
 import ru.innopolis.reviewclassifier.domain.port.MetricsPort;
 
 /**
- * Package-private strict JSON-to-{@link ReviewInput} parser guaranteeing zero PII echo on errors (B2, M2).
+ * Package-private strict JSON-to-{@link ReviewInput} parser guaranteeing zero PII echo on errors.
  */
 final class ReviewRequestParser {
     private static final Pattern CANONICAL_UUID_PATTERN =
