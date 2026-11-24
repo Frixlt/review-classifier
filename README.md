@@ -1,5 +1,30 @@
 # Review Classifier (`review-classifier`)
 
+<p>
+  <a href="https://github.com/Frixlt/review-classifier/actions/workflows/ci.yml"><img src="https://github.com/Frixlt/review-classifier/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI Quality Gate"></a>
+  <a href="https://github.com/Frixlt/review-classifier/commits/main"><img src="https://img.shields.io/github/last-commit/Frixlt/review-classifier?style=flat-square&logo=git&logoColor=white&color=informational" alt="Last Commit"></a>
+  <img src="https://img.shields.io/github/languages/top/Frixlt/review-classifier?style=flat-square&color=ED8B00" alt="Top Language">
+  <img src="https://img.shields.io/github/repo-size/Frixlt/review-classifier?style=flat-square&color=blue" alt="Repo Size">
+</p>
+<p>
+  <img src="https://img.shields.io/badge/Java-25%20LTS-ED8B00?style=flat-square&logo=openjdk&logoColor=white" alt="Java 25 LTS">
+  <img src="https://img.shields.io/badge/Maven-3.10.0-C71A36?style=flat-square&logo=apachemaven&logoColor=white" alt="Maven 3.10.0">
+  <img src="https://img.shields.io/badge/Jackson-2.23.0-2B5B84?style=flat-square&logo=json&logoColor=white" alt="Jackson 2.23.0">
+  <img src="https://img.shields.io/badge/Docker-Multi--Stage-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Multi-Stage">
+  <img src="https://img.shields.io/badge/OpenAPI-3.1.0-6BA539?style=flat-square&logo=openapiinitiative&logoColor=white" alt="OpenAPI 3.1.0">
+  <img src="https://img.shields.io/badge/Prometheus-Metrics-E6522C?style=flat-square&logo=prometheus&logoColor=white" alt="Prometheus Metrics">
+  <img src="https://img.shields.io/badge/Architecture-Clean%20%2F%20Hexagonal-6E4AFF?style=flat-square" alt="Clean / Hexagonal Architecture">
+</p>
+<p>
+  <img src="https://img.shields.io/badge/JUnit%205-72%20tests%20passing-25A162?style=flat-square&logo=junit5&logoColor=white" alt="JUnit 5 — 72 tests passing">
+  <img src="https://img.shields.io/badge/JaCoCo%20Core-97.5%25%20line-25A162?style=flat-square" alt="JaCoCo Core — 97.5% line">
+  <img src="https://img.shields.io/badge/Spotless-Palantir%20Format-4B32C3?style=flat-square" alt="Spotless — Palantir Format">
+  <img src="https://img.shields.io/badge/Checkstyle-0%20violations-25A162?style=flat-square" alt="Checkstyle — 0 violations">
+  <img src="https://img.shields.io/badge/PMD%207-CC%20%3C%3D%2010-25A162?style=flat-square" alt="PMD 7 — CC <= 10">
+  <img src="https://img.shields.io/badge/SpotBugs-0%20bugs-25A162?style=flat-square" alt="SpotBugs — 0 bugs">
+  <img src="https://img.shields.io/badge/152--%D0%A4%D0%97-PII%20Masking-0A7BBB?style=flat-square" alt="152-ФЗ — PII Masking">
+</p>
+
 Микросервис классификации тональности и выявления критичных отзывов интернет-магазина на **OpenJDK 25 LTS** (Вариант 1, курс «Основы программной инженерии», ПР-3 / ДЗ-4).
 
 Автор: **Бердников Максим Александрович** (`MFAI-01`, `m.berdnikov@innopolis.university`).
